@@ -1,97 +1,64 @@
-require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { google } = require('googleapis');
-const open = require('open');
 const bodyParser = require('body-parser');
-const credentials = require('./credentials.json');
+const cookieParser = require('cookie-parser');
+const credentials = require('./credentials.json')
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = 3000;
 
-// OAuth2 Client
+// Middleware setup
+const allowedOrigins = ['http://localhost:3001']; // Add the frontend URL here
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true // Allow credentials (cookies, authorization headers, etc.)
+}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(cookieParser());
 const oAuth2Client = new google.auth.OAuth2(
-  credentials.web.client_id,
-  credentials.web.client_secret,
-  'http://localhost:3000'
-);
+    credentials.web.client_id,
+    credentials.web.client_secret,
+    credentials.web.redirect_uris[1]
+  );
 
-// Generate Auth URL
+// Generate the auth URL
 const authUrl = oAuth2Client.generateAuthUrl({
   access_type: 'offline',
-  scope: ['https://www.googleapis.com/auth/gmail.readonly'],
+  scope: ['https://www.googleapis.com/auth/gmail.readonly']
 });
 
-app.use(bodyParser.json());
+// Route to start OAuth2 flow
+app.get('/getemails', async (req, res) => {
+    return res.send(authUrl)
+  });
+  
 
-app.get('/', (req, res) => {
-  res.send(`<a href="${authUrl}">Authenticate with Google</a>`);
-});
-
-// OAuth2 callback endpoint
+// Route to handle OAuth2 callback
 app.get('/oauth2callback', async (req, res) => {
+  const email = req.cookies.email;
   const code = req.query.code;
-  if (!code) {
-    return res.status(400).send('Missing authorization code');
-  }
 
-  try {
-    const { tokens } = await oAuth2Client.getToken(code);
-    oAuth2Client.setCredentials(tokens);
+  // Exchange authorization code for access token
+  const { tokens } = await oAuth2Client.getToken(code);
+  oAuth2Client.setCredentials(tokens);
 
-    // Save tokens to environment variables or database securely
-    console.log('Access Token:', tokens.access_token);
-    console.log('Refresh Token:', tokens.refresh_token);
-
-    // Save tokens to local storage (you can use a database in production)
-    res.cookie('access_token', tokens.access_token);
-    res.cookie('refresh_token', tokens.refresh_token);
-
-    res.send('Authentication successful! You can close this tab.');
-  } catch (error) {
-    console.error('Error exchanging code for tokens:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-// Endpoint to get emails using tokens
-app.post('/api/emails', async (req, res) => {
-  const { accessToken, refreshToken } = req.body;
-
-  if (!accessToken || !refreshToken) {
-    return res.status(400).send('Missing access or refresh token');
-  }
-
-  oAuth2Client.setCredentials({ access_token: accessToken, refresh_token: refreshToken });
-
+  // Use Gmail API to retrieve first 5 emails
   const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+  const response = await gmail.users.messages.list({
+    userId: 'me',
+    maxResults: 5
+  });
 
-  try {
-    const response = await gmail.users.messages.list({
-      userId: 'me',
-      maxResults: 5,
-    });
+  const emails = response.data.messages;
 
-    const messages = response.data.messages || [];
-
-    const emails = await Promise.all(
-      messages.map(async (message) => {
-        const msg = await gmail.users.messages.get({
-          userId: 'me',
-          id: message.id,
-        });
-        return msg.data;
-      })
-    );
-
-    res.json(emails);
-  } catch (error) {
-    console.error('Error fetching emails:', error);
-    res.status(500).send('Internal Server Error');
-  }
+  // Display emails
+  res.json(emails);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Open this URL to start the authentication process: ${authUrl}`);
-  open(authUrl);
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
