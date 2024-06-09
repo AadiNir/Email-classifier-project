@@ -2,11 +2,12 @@ const express = require("express")
 const app = express();
 const router = require('../server/api/index');
 const cors = require("cors");
-const allowedOrigins = ['https://email-classifier-project-f6kel6gqo-aadinirs-projects.vercel.app']; 
+const allowedOrigins = ['https://email-classifier-project-f6kel6gqo-aadinirs-projects.vercel.app','http://localhost:3000']; 
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 app.use(cors({
+  origin:allowedOrigins,
   credentials: true 
 }));
 app.use(express.json());
