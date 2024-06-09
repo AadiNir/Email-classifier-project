@@ -10,14 +10,12 @@ const oAuth2Client = new google.auth.OAuth2(
     credentials.web.redirect_uris[1]
   );
 
-// Generate the auth URL
 const authUrl = oAuth2Client.generateAuthUrl({
   access_type: 'offline',
   scope: ['https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/userinfo.profile']
 });
 
 
-// Route to start OAuth2 flow
 router.get('/getemails', async (req, res) => {
     return res.send(authUrl)
   });
@@ -28,7 +26,7 @@ router.get('/getemails', async (req, res) => {
         const { tokens } =await oAuth2Client.getToken(code);
          res.cookie('acctoken', JSON.stringify(tokens), {
           httpOnly: false,  // Change to true if you want the cookie to be accessible only by the server
-          secure: false,    // Set to true if using HTTPS
+          secure: true,    // Set to true if using HTTPS
           maxAge: 3600000,  // 1 hour
           sameSite: 'lax',
         });
