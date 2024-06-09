@@ -114,6 +114,8 @@ export default function Emailclass() {
     //     )
     // }
 
+
+
     const handleEmailBoxClick = (index: number) => {
         setClickedEmailId(index);
         setDisplaymail(true);
@@ -128,8 +130,11 @@ export default function Emailclass() {
         <div>
             <div className="flex items-center p-4 space-x-4 justify-between">
                 <div className="flex items-center">
-            <img className='rounded-full m-3' src={localStorage.getItem('userpic')!=undefined?localStorage.getItem('userpic')||'':''} alt="image of user"/>
-            <h1 className="font-mono text-xl">{localStorage.getItem('username')||''}</h1>
+                <div className="flex items-center">
+    <img className='rounded-full m-3' src={typeof localStorage !== 'undefined' ? localStorage.getItem('userpic') || '' : ''} alt="image of user"/>
+    <h1 className="font-mono text-xl">{typeof localStorage !== 'undefined' ? localStorage.getItem('username') || '' : ''}</h1>
+</div>
+
             </div>
             <button className="p-4 border-4 border-slate-50 m-6 rounded-lg hover:bg-white hover:text-black w-36" onClick={()=>{
                 router.push('/')
