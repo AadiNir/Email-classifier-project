@@ -1,23 +1,9 @@
-const express = require('express');
-const cors = require('cors');
+const express = require('express')
 const { google } = require('googleapis');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+const router = express.Router();
 const credentials = require('./credentials.json')
+const cookieParser = require('cookie-parser');
 
-const app = express();
-const port = 3000;
-
-// Middleware setup
-const allowedOrigins = ['http://localhost:3001']; // Add the frontend URL here
-
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true // Allow credentials (cookies, authorization headers, etc.)
-}));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(cookieParser());
 const oAuth2Client = new google.auth.OAuth2(
     credentials.web.client_id,
     credentials.web.client_secret,
@@ -27,38 +13,78 @@ const oAuth2Client = new google.auth.OAuth2(
 // Generate the auth URL
 const authUrl = oAuth2Client.generateAuthUrl({
   access_type: 'offline',
-  scope: ['https://www.googleapis.com/auth/gmail.readonly']
+  scope: ['https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/userinfo.profile']
 });
+
 
 // Route to start OAuth2 flow
-app.get('/getemails', async (req, res) => {
+router.get('/getemails', async (req, res) => {
     return res.send(authUrl)
   });
-  
 
-// Route to handle OAuth2 callback
-app.get('/oauth2callback', async (req, res) => {
-  const email = req.cookies.email;
-  const code = req.query.code;
-
-  // Exchange authorization code for access token
-  const { tokens } = await oAuth2Client.getToken(code);
-  oAuth2Client.setCredentials(tokens);
-
-  // Use Gmail API to retrieve first 5 emails
-  const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
-  const response = await gmail.users.messages.list({
-    userId: 'me',
-    maxResults: 5
-  });
-
-  const emails = response.data.messages;
-
-  // Display emails
-  res.json(emails);
+  router.get('/newoauthcallbacknew', async (req, res) => {
+    try {
+        const code = req.query.code;
+        const { tokens } =await oAuth2Client.getToken(code);
+         res.cookie('acctoken', JSON.stringify(tokens), {
+          httpOnly: false,  // Change to true if you want the cookie to be accessible only by the server
+          secure: false,    // Set to true if using HTTPS
+          maxAge: 3600000,  // 1 hour
+          sameSite: 'lax',
+        });
+        oAuth2Client.setCredentials({access_token: tokens.access_token});    // use the new auth client with the access_token
+        let oauth2 = google.oauth2({
+            auth: oAuth2Client,
+            version: 'v2'
+          });        
+          let { data } = await oauth2.userinfo.get();    
+          return res.json(data)
+    } catch (error) {
+        console.log(error)
+    }
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+router.get('/oauth2callback', async (req, res) => {
+    try {
+        let numberofemails = req.query.count
+        let token = req.cookies.acctoken;
+        if (!token) {
+            throw new Error('Token not found');
+        }
+
+        oAuth2Client.setCredentials(JSON.parse(token));
+
+        const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+        const response = await gmail.users.messages.list({
+            userId: 'me',
+            maxResults: numberofemails
+        });
+
+        const emails = await Promise.all(response.data.messages.map(async (message) => {
+            const email = await gmail.users.messages.get({
+                userId: 'me', 
+                id: message.id,
+                format: 'full'
+            });
+
+            const headers = email.data.payload.headers;
+            const subject = headers.find(header => header.name === 'Subject')?.value || '';
+            const from = headers.find(header=>header.name==='From')?.value || '';
+            const to = headers.find(header=>header==='Delivered-To')?.value || '';
+            const labels = email.data.labelIds;
+            const body = email.data.payload.parts?.find(part => part.mimeType === 'text/plain')?.body?.data || '';
+
+            return { subject,labels, body,from,to };
+        }));
+
+        // Send the processed emails as JSON response
+        res.json(emails);
+    } catch (error) {
+        console.error('Error retrieving emails:', error);
+        res.status(500).send('Error retrieving emails');
+    }
 });
+
+module.exports = router
+
+
