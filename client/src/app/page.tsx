@@ -25,7 +25,7 @@ export default function Home() {
   // };
 
   const googleauth= async()=>{
-    const response = await axios.get('https://email-classifier-project-server-a6tho3o9c-aadinirs-projects.vercel.app/api/v1/emailclassifier/getemails');
+    const response = await axios.get('https://email-classifier-project-server.vercel.app/api/v1/emailclassifier/getemails');
     window.location.assign(response.data);
   }
 useEffect(()=>{
@@ -41,7 +41,7 @@ useEffect(()=>{
   const onFormSubmit=async ()=>{ 
       if (localStorage.getItem('aut')) {
         try{
-          const resp = await axios.get(`https://email-classifier-project-server-a6tho3o9c-aadinirs-projects.vercel.app/api/v1/emailclassifier/newoauthcallbacknew?code=${localStorage.getItem('aut')}`,
+          const resp = await axios.get(`https://email-classifier-project-server.vercel.app/api/v1/emailclassifier/newoauthcallbacknew?code=${localStorage.getItem('aut')}`,
             { withCredentials: true });
           localStorage.setItem('username',resp.data.name)
           localStorage.setItem('userpic',resp.data.picture)
