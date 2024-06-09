@@ -156,7 +156,7 @@ export default function Emailclass() {
                 {classifieddata.map((category: string, index: number) =>
                 (
                      <div onClick={()=> handleEmailBoxClick(index)} className="border-2 m-5 p-12 w-1/2 border-white rounded-xl flex justify-between hover:bg-white hover:text-black cursor-pointer	">
-                    <Emailbox from={emailalldata[index]?.from} body={emailalldata[index]?.body} subject={emailalldata[index]?.subject} classified={category}/>
+                    <Emailbox from={emailalldata[index]?.from} body={emailalldata[index]?.body} subject={emailalldata[index]?.subject} classified={category} to={""}/>
                     </div>
 
                 ))}
