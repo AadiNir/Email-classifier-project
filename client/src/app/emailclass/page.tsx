@@ -47,7 +47,7 @@ export default function Emailclass() {
     // Function to fetch and classify emails
     const fetchEmail = async (val: number) => {
         try {
-            const resp = await axios.get(`https://email-classifier-project-f47c-rxu66pa41-aadinirs-projects.vercel.app/api/v1/emailclassifier/oauth2callback?count=${val}`, {
+            const resp = await axios.get(`https://email-classifier-project-f47c-12bo8qsnw-aadinirs-projects.vercel.app/api/v1/emailclassifier/oauth2callback?count=${val}`, {
                 withCredentials: true
             });
             const emailData: Emaildt[] = [];
