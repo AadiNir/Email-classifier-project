@@ -45,9 +45,10 @@ useEffect(()=>{
             { withCredentials: true });
           localStorage.setItem('username',resp.data.name)
           localStorage.setItem('userpic',resp.data.picture)
-         
+          console.log(resp.data.name)
 
         }catch(err){
+          console.log("erro2")
           console.log(err)
         }
       } else {
