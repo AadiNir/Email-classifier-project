@@ -32,6 +32,7 @@ router.post('/oauth2callback', async (req, res) => {
             sameSite: 'none',
       
         });
+        console.loog(tokens)
         oAuth2Client.setCredentials(tokens);
 
         const oauth2 = google.oauth2({
