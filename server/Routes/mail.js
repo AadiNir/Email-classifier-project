@@ -26,13 +26,7 @@ router.get('/oauth2callback', async (req, res) => {
             throw new Error('Authorization code not provided');
         }
         const { tokens } = await oAuth2Client.getToken(code);
-        res.cookie('acctoken', JSON.stringify(tokens), {
-            secure: true,    // Set to true if using HTTPS
-            maxAge: 3600000,  // 1 hour
-            sameSite: 'lax',
-            domain: 'email-classifier-project-client.vercel.app', // Client domain
-            path: '/' 
-        });
+        res.cookie('acctoken', JSON.stringify(tokens));
         oAuth2Client.setCredentials(tokens);
 
         const oauth2 = google.oauth2({
