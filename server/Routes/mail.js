@@ -26,10 +26,10 @@ router.post('/oauth2callback', async (req, res) => {
             throw new Error('Authorization code not provided');
         }
         const { tokens } = await oAuth2Client.getToken(code);
-        await res.cookie('acctoken', JSON.stringify(tokens), {
+        res.cookie('acctoken', JSON.stringify(tokens), {
             secure: true,    // Set to true if using HTTPS
             maxAge: 3600000,  // 1 hour
-            sameSite: 'none',
+            same_site: 'none',
       
         });
         console.loog(tokens)
