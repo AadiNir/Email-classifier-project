@@ -25,7 +25,7 @@ export default function Home() {
   // };
 
   const googleauth= async()=>{
-    const response = await axios.get('https://email-classifier-project-server.vercel.app/api/v1/emailclassifier/getemails');
+    const response = await axios.get('http://localhost:3000/api/v1/emailclassifier/getemails');
     window.location.assign(response.data);
   }
 useEffect(()=>{

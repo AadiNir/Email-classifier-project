@@ -2,7 +2,7 @@ const express = require("express")
 const app = express();
 const router = require('../server/api/index');
 const cors = require("cors");
-const allowedOrigins = ['https://email-classifier-project-client.vercel.app','http://localhost:3000']; 
+const allowedOrigins = ['https://email-classifier-project-client.vercel.app','http://localhost:3001']; 
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
