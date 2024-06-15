@@ -19,14 +19,19 @@ router.get('/getemails', async (req, res) => {
     return res.send(authUrl);
 });
 
-router.get('/oauth2callback', async (req, res) => {
+router.post('/oauth2callback', async (req, res) => {
     try {
         const code = req.query.code;
         if (!code) {
             throw new Error('Authorization code not provided');
         }
         const { tokens } = await oAuth2Client.getToken(code);
-        res.cookie('acctoken', JSON.stringify(tokens));
+        res.cookie('acctoken', JSON.stringify(tokens), {
+            secure: true,    // Set to true if using HTTPS
+            maxAge: 3600000,  // 1 hour
+            sameSite: 'lax',
+      
+        });
         oAuth2Client.setCredentials(tokens);
 
         const oauth2 = google.oauth2({
