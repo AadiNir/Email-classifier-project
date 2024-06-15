@@ -30,7 +30,7 @@ router.get('/oauth2callback', async (req, res) => {
             secure: true,    // Set to true if using HTTPS
             maxAge: 3600000,  // 1 hour
             sameSite: 'lax',
-            domain: 'email-classifier-project-client.vercel.app', // Replace with your domain
+            domain: 'email-classifier-project-client.vercel.app', // Client domain
             path: '/' 
         });
         oAuth2Client.setCredentials(tokens);
@@ -47,6 +47,7 @@ router.get('/oauth2callback', async (req, res) => {
         res.status(500).send('Authentication error');
     }
 });
+
 
 router.get('/fetchmails', async (req, res) => {
     try {
