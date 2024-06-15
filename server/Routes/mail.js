@@ -27,7 +27,6 @@ router.get('/oauth2callback', async (req, res) => {
         }
         const { tokens } = await oAuth2Client.getToken(code);
         res.cookie('acctoken', JSON.stringify(tokens), {
-            httpOnly: true,  // Make it accessible only by the server
             secure: true,    // Set to true if using HTTPS
             maxAge: 3600000,  // 1 hour
             sameSite: 'lax',
