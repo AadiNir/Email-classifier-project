@@ -28,12 +28,12 @@ router.post('/oauth2callback', async (req, res) => {
         const { tokens } = await oAuth2Client.getToken(code);
         res.cookie('acctoken', JSON.stringify(tokens), {
             httpOnly: true,
-            secure: false,    // Set to true if using HTTPS
+            secure: true,    // Set to true if using HTTPS
             maxAge: 3600000,  // 1 hour
             same_site: 'none',
       
         });
-        console.loog(tokens)
+        console.log(tokens)
         oAuth2Client.setCredentials(tokens);
 
         const oauth2 = google.oauth2({

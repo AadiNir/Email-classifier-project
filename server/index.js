@@ -9,7 +9,8 @@ const allowedOrigins = ['https://email-classifier-project-client.vercel.app', 'h
 app.use(cookieParser());
 app.use(cors({
   origin: allowedOrigins,
-  credentials: true 
+  credentials: true ,
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json());
